@@ -2,7 +2,7 @@
 
 const { reduce } = require('./reduce');
 
-describe('reduce', () => {
+describe('The reduce function', () => {
   beforeAll(() => {
     Array.prototype.reduce2 = reduce; // eslint-disable-line
   });
@@ -11,9 +11,107 @@ describe('reduce', () => {
     delete Array.prototype.reduce2;
   });
 
-  it('should ', () => {
-
+  it('should be declared', () => {
+    expect(reduce).toBeInstanceOf(Function);
   });
 
-  // Add tests here
+  describe('With a start value', () => {
+    it('should not call the callback for an empty array', () => {
+      const fn = jest.fn();
+      const startValue = 10;
+
+      [].reduce2(fn, startValue);
+      expect(fn).not.toHaveBeenCalled();
+    });
+
+    it('should return the start value for an empty array', () => {
+      const fn = () => 1;
+      const startValue = 10;
+
+      expect([].reduce2(fn, startValue)).toBe(startValue);
+    });
+
+    it('should call the callback for each item', () => {
+      const fn = jest.fn();
+      const items = [1, 2, 3];
+
+      items.reduce2(fn, 0);
+      expect(fn).toHaveBeenCalledTimes(items.length);
+    });
+
+    it('should pass the correct arguments to the callback', () => {
+      const startValue = 0;
+      const items = [1, 2, 3];
+      const fn = jest.fn((_acc, v) => v);
+
+      items.reduce2(fn, startValue);
+
+      for (let i = 0; i < items.length; i++) {
+        expect(fn).toHaveBeenNthCalledWith(
+          i + 1,
+          items[i - 1] || startValue,
+          items[i],
+          i,
+          items,
+        );
+      }
+    });
+
+    it('should return the correct result', () => {
+      const items = [1, 2, 3];
+      const sumFn = jest.fn((sum, v) => sum + v);
+
+      expect(items.reduce2(sumFn, 0)).toBe(6);
+    });
+  });
+
+  describe('Without a start value', () => {
+    it('should not call the callback for an empty array', () => {
+      const fn = jest.fn();
+
+      [].reduce2(fn);
+      expect(fn).not.toHaveBeenCalled();
+    });
+
+    it('should return undefined for an empty array', () => {
+      const items = [];
+      const fn = jest.fn(() => 1);
+
+      expect(items.reduce2(fn)).toBeUndefined();
+    });
+
+    it('should use the first item as the start value', () => {
+      const fn = jest.fn();
+      const items = [1, 2, 3];
+
+      items.reduce2(fn);
+      expect(fn).toHaveBeenNthCalledWith(1, items[0], items[1], 1, items);
+    });
+
+    it('should skip the first item', () => {
+      const fn = jest.fn();
+      const items = [1, 2, 3];
+
+      items.reduce2(fn);
+      expect(fn).toHaveBeenCalledTimes(items.length - 1);
+    });
+
+    it('should pass the correct arguments to the callback', () => {
+      const items = [1, 2, 3];
+      const fn = jest.fn((_acc, v) => v);
+
+      items.reduce2(fn);
+
+      for (let i = 1; i < items.length; i++) {
+        expect(fn).toHaveBeenNthCalledWith(i, items[i - 1], items[i], i, items);
+      }
+    });
+
+    it('should return the correct result', () => {
+      const items = [1, 2, 3];
+      const sumFn = jest.fn((sum, v) => sum + v);
+
+      expect(items.reduce2(sumFn)).toBe(6);
+    });
+  });
 });
